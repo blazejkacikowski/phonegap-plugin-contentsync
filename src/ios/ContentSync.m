@@ -176,15 +176,17 @@
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:message];
             NSLog(@"%@", [error localizedDescription]);
         } else {
-            [self copyCordovaAssets:[appPath path] copyRootApp:YES];
-            if(src == nil) {
-                NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:2];
-                [message setObject:[appPath path] forKey:@"localPath"];
-                [message setObject:@"true" forKey:@"cached"];
-                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
-                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-                return;
-            }
+            [self.commandDelegate runInBackground:^{
+                [self copyCordovaAssets:[appPath path] copyRootApp:YES];
+                if(src == nil) {
+                    NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:2];
+                    [message setObject:[appPath path] forKey:@"localPath"];
+                    [message setObject:@"true" forKey:@"cached"];
+                    pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:message];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+                    return;
+                }
+            }]
         }
     }
 
@@ -226,24 +228,24 @@
 
     self.session = [self backgroundSession:timeout];
     NSURL *srcURL = [NSURL URLWithString:src];
-    
+
     // Setting headers (do changes also in download url, or better extract setting the following lines to a function)
     NSDictionary *headers = [command argumentAtIndex:3 withDefault:nil andClass:[NSDictionary class]];
-    
+
     // checking if URL is valid
     BOOL srcIsValid = YES;
-    
+
     if (validateSrc == YES) {
         NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:srcURL];
         [urlRequest setHTTPMethod:@"HEAD"];
-        
+
         [self setHeaders:urlRequest :headers];
 
         // request just to check if url is correct and server is available
         NSHTTPURLResponse *response = nil;
         NSError *error = nil;
         [NSURLConnection sendSynchronousRequest:urlRequest returningResponse:&response error:&error];
-        
+
         if (error || response.statusCode >= 400) {
             srcIsValid = false;
         }
@@ -281,7 +283,7 @@
         } else {
             NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:downloadURL];
             request.timeoutInterval = 15.0;
-            
+
             [self setHeaders:request :headers];
 
             NSURLSessionDownloadTask *downloadTask = [self.session downloadTaskWithRequest:request];
