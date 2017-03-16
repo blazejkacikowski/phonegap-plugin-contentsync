@@ -155,7 +155,6 @@
     BOOL copyRootApp = [[command argumentAtIndex:5 withDefault:@(NO)] boolValue];
 
     if(copyRootApp == YES) {
-        CDVPluginResult *pluginResult = nil;
         NSError* error = nil;
 
         NSLog(@"Creating app directory %@", [appPath path]);
@@ -170,6 +169,7 @@
         }
 
         if(error != nil) {
+            CDVPluginResult *pluginResult = nil;
             NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:2];
             [message setObject:[NSNumber numberWithInteger:LOCAL_ERR] forKey:@"type"];
             [message setObject:[NSNumber numberWithInteger:-1] forKey:@"responseCode"];
@@ -177,6 +177,7 @@
             NSLog(@"%@", [error localizedDescription]);
         } else {
             [self.commandDelegate runInBackground:^{
+                CDVPluginResult *pluginResult = nil;
                 [self copyCordovaAssets:[appPath path] copyRootApp:YES];
                 if(src == nil) {
                     NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:2];
