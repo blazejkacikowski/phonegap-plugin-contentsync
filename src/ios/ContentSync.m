@@ -124,14 +124,14 @@
 }
 
 - (void)sync:(CDVInvokedUrlCommand*)command {
-    NSString* src = [command argumentAtIndex:0 withDefault:nil];
-    NSString* type = [command argumentAtIndex:2];
-    BOOL local = [type isEqualToString:@"local"];
+    __block NSString* src = [command argumentAtIndex:0 withDefault:nil];
+    __block NSString* type = [command argumentAtIndex:2];
+    __block BOOL local = [type isEqualToString:@"local"];
 
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString* appId = [command argumentAtIndex:1];
-    NSURL* storageDirectory = [ContentSync getStorageDirectory];
-    NSURL *appPath = [storageDirectory URLByAppendingPathComponent:appId];
+    __block NSFileManager *fileManager = [NSFileManager defaultManager];
+    __block NSString* appId = [command argumentAtIndex:1];
+    __block NSURL* storageDirectory = [ContentSync getStorageDirectory];
+    __block NSURL *appPath = [storageDirectory URLByAppendingPathComponent:appId];
     NSLog(@"appPath %@", appPath);
 
     if(local == YES) {
@@ -155,13 +155,13 @@
     BOOL copyRootApp = [[command argumentAtIndex:5 withDefault:@(NO)] boolValue];
 
     if(copyRootApp == YES) {
-        NSError* error = nil;
+        __block NSError* error = nil;
 
         NSLog(@"Creating app directory %@", [appPath path]);
         [fileManager createDirectoryAtPath:[appPath path] withIntermediateDirectories:YES attributes:nil error:&error];
 
-        NSError* errorSetting = nil;
-        BOOL success = [appPath setResourceValue: [NSNumber numberWithBool: YES]
+        __block NSError* errorSetting = nil;
+        __block BOOL success = [appPath setResourceValue: [NSNumber numberWithBool: YES]
                                           forKey: NSURLIsExcludedFromBackupKey error: &errorSetting];
 
         if(success == NO) {
@@ -178,6 +178,7 @@
         } else {
             [self.commandDelegate runInBackground:^{
                 CDVPluginResult *pluginResult = nil;
+                NSLog(@"Invoking with parameter %@", [appPath path]);
                 [self copyCordovaAssets:[appPath path] copyRootApp:YES];
                 if(src == nil) {
                     NSMutableDictionary* message = [NSMutableDictionary dictionaryWithCapacity:2];
