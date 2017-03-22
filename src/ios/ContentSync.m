@@ -137,6 +137,7 @@
     if(local == YES) {
         NSLog(@"Requesting local copy of %@", appId);
         if([fileManager fileExistsAtPath:[appPath path]]) {
+            NSLog(@"File Exists at path %@", appPath);
             if (![ContentSync hasAppBeenUpdated]) {
                 NSLog(@"Found local copy %@", [appPath path]);
                 CDVPluginResult *pluginResult = nil;
@@ -194,10 +195,12 @@
 
 
     __weak ContentSync* weakSelf = self;
-
-    [self.commandDelegate runInBackground:^{
-        [weakSelf startDownload:command extractArchive:YES];
-    }];
+    if (local != YES && src != nil) {
+        NSLog(@"Starting download %@", [appPath path]);
+        [self.commandDelegate runInBackground:^{
+            [weakSelf startDownload:command extractArchive:YES];
+        }];
+    }
 }
 
 - (void) download:(CDVInvokedUrlCommand*)command {
